@@ -1,0 +1,22 @@
+# MySQL configuration for Docker Compose
+database:
+  driver: "mysql"
+  host: "mysql"
+  port: 3306
+  database: "migr8_test"
+  username: "migr8user"
+  password: "migr8pass"
+
+migration:
+  directory: "./migrations"
+  table: "schema_migrations"
+
+backup:
+  directory: "./backups"
+  compression: true
+  retention_days: 30
+
+seed:
+  directory: "./seeds"
+
+verbose: true

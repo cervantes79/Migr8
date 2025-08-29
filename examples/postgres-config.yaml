@@ -1,0 +1,23 @@
+# PostgreSQL configuration for Docker Compose
+database:
+  driver: "postgres"
+  host: "postgres"
+  port: 5432
+  database: "migr8_test"
+  username: "migr8user"
+  password: "migr8pass"
+  sslmode: "disable"
+
+migration:
+  directory: "./migrations"
+  table: "schema_migrations"
+
+backup:
+  directory: "./backups"
+  compression: true
+  retention_days: 30
+
+seed:
+  directory: "./seeds"
+
+verbose: true

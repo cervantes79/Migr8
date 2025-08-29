@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for testing
+  postgres:
+    image: postgres:15-alpine
+    container_name: migr8-postgres
+    environment:
+      POSTGRES_DB: migr8_test
+      POSTGRES_USER: migr8user
+      POSTGRES_PASSWORD: migr8pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U migr8user -d migr8_test"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # MySQL database for testing  
+  mysql:
+    image: mysql:8.0
+    container_name: migr8-mysql
+    environment:
+      MYSQL_DATABASE: migr8_test
+      MYSQL_USER: migr8user
+      MYSQL_PASSWORD: migr8pass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Migr8 application
+  migr8:
+    build: .
+    container_name: migr8-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/app/migrations
+      - ./backups:/app/backups  
+      - ./seeds:/app/seeds
+      - ./config:/app/config
+    environment:
+      - MIGR8_CONFIG=/app/config/.migr8.yaml
+    networks:
+      - migr8-network
+    profiles:
+      - tools
+
+  # Migr8 with PostgreSQL configuration
+  migr8-postgres:
+    build: .
+    container_name: migr8-postgres-client
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/app/migrations
+      - ./backups:/app/backups
+      - ./seeds:/app/seeds
+      - ./examples/postgres-config.yaml:/app/.migr8.yaml
+    networks:
+      - migr8-network
+    profiles:
+      - postgres
+
+  # Migr8 with MySQL configuration  
+  migr8-mysql:
+    build: .
+    container_name: migr8-mysql-client
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/app/migrations
+      - ./backups:/app/backups
+      - ./seeds:/app/seeds
+      - ./examples/mysql-config.yaml:/app/.migr8.yaml
+    networks:
+      - migr8-network
+    profiles:
+      - mysql
+
+networks:
+  migr8-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  mysql_data:
+    driver: local

@@ -1,0 +1,32 @@
+# Migr8 Configuration Example
+#
+# Copy this file to .migr8.yaml and customize for your environment
+#
+
+# Database configuration
+database:
+  driver: "postgres"     # postgres, mysql, sqlite3
+  host: "localhost"
+  port: 5432
+  database: "your_database_name"
+  username: "your_username" 
+  password: "your_password"
+  sslmode: "disable"     # postgres only: disable, require, verify-ca, verify-full
+
+# Migration settings
+migration:
+  directory: "./migrations"
+  table: "schema_migrations"
+
+# Backup configuration
+backup:
+  directory: "./backups"
+  compression: true      # Enable gzip compression
+  retention_days: 30     # Delete backups older than this
+
+# Seed configuration
+seed:
+  directory: "./seeds"
+
+# Global settings
+verbose: false
